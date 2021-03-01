@@ -1,10 +1,35 @@
-const express = require('express')
-const path = require('path')
-const PORT = process.env.PORT || 5000
+const cors = require('cors');
+const http = require("http");
+const express = require('express');
+const app = express();
+app.use(cors());
 
-express()
-  .use(express.static(path.join(__dirname, 'public')))
-  .set('views', path.join(__dirname, 'views'))
-  .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('pages/index'))
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+const httpServer = http.createServer(app);
+const io = require("socket.io")(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+app.get('/', function (req, res) {
+  res.send('Hello World!')
+})
+
+io.on("connection", (socket) => {
+  console.log('connected socket');
+
+  const messages = [];
+
+  socket.on('test', (data) => {
+    messages.push(data);
+    console.log(data)
+    io.emit('message', data);
+
+    console.log('message list', messages)
+  })
+  // ...
+});
+
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => console.log(`Listening on ${ PORT }`));
