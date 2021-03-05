@@ -16,16 +16,39 @@ app.get('/', function (req, res) {
   res.send('Hello World!123')
 })
 
-io.on("connection", (socket) => {
+let connected = [];
+let start = 2;
+
+io.on("connection", (socket, userId) => {
   console.log('connected socket');
 
+  // if(connected.length === 0) {
+  //   socket.join(start);
+  // } else {
+  //   start++;
+  //   socket.join(start);
+  // }
+
+  // connected.push(start);
   const messages = [];
 
-  socket.on('test', (data) => {
-    messages.push(data);
-    console.log(data)
-    io.emit('message', data);
+  socket.on('message', (value) => {
 
+    const messageResponse = {
+      message: value.message,
+      user: {
+        id: value.userId,
+        name: 'Ramanan Alvapillai'
+      },
+      cid: value.cid,
+      timestamp: '12:30pm'
+    };
+
+    io.emit('message', messageResponse)
+
+    messages.push(value);
+
+    console.log(messageResponse)
     console.log('message list', messages)
   })
   // ...
