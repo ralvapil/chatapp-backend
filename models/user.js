@@ -26,7 +26,7 @@ userSchema.statics.findOrCreate = function(profile, callback) {
 
   const user = new this();
 
-  this.findOne({_id : profile.id},function(err,result){ 
+  this.findOne({googleId : profile.id},function(err,result){ 
       if(!result){
         user.firstName = profile.name.givenName;
         user.lastName = profile.name.familyName;
