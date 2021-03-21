@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
 const User = require('./models/user');
 const Chat = require('./models/chat');
+const ContactList = require('./models/contactList')
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
@@ -90,8 +91,29 @@ app.get('/userStatus', function (req, res) {
   // return res.status(200).send()
 })
 
-app.get('/', function (req, res) {
-  res.send('Hello World!123')
+app.get('/', async function (req, res) {
+  // res.send('Hello World!123')
+
+  const results = await Chat
+  .find( { users: '60457f15aa458bd0890f2641' } )
+  .populate({
+    path: ''
+  })
+  .exec();
+
+  res.send(results)
+  //populate contact data
+  // const contactList = new ContactList({
+  //   user: '60457f15aa458bd0890f2641',
+  //   contacts: [
+  //     {
+  //       user: '6045a32b6dd4acfaf8ee6df8',
+  //       nickname: 'ram-judo'
+  //     }
+  //   ],
+  // })
+
+  // contactList.save(() => console.log('contact list created: ', contactList))
 })
 
 // let chat_id = null;
@@ -134,15 +156,36 @@ io.on("connection", (socket) => {
   // connected.push(start);
   const messages = [];
 
-  socket.on('getConvos', async (user) => {
+  socket.on('getConvos', async (user, callback) => {
     console.log('received request for convos', user);
-      const chats = await Chat.find( { users: user.user } ).populate('users').exec();
+
+    const chats = await 
+    Chat
+      .aggregate([
+        { $match: { users:   mongoose.Types.ObjectId(user.user) } },
+        { $lookup: 
+          { 
+            from: 'users',
+            localField: 'users',
+            foreignField: '_id',
+            as: 'usersData'
+          }
+        }
+      ])
+      .exec();
+
+      // const chats = await 
+      // Chat
+      //   .find( { users: user.user } )
+      //   .populate('users')
+      //   .exec();
+
       console.log('sending convos', chats);
-      
-      socket.emit('convos', chats);
+      callback(chats)
+      // socket.emit('convos', chats);
   })
 
-  socket.on('messageHistory', async (value) => {
+  socket.on('messageHistory', async (value, callback) => {
     console.log('received message history request', value)
     //get the messages from the db
     const chatLoadTest = await Chat.findOne({_id: value.cid});
@@ -155,7 +198,7 @@ io.on("connection", (socket) => {
       messageHistory = chatLoadTest.messages.slice(Math.max(chatLoadTest.messages.length - 20, 0))
     }
 
-    socket.emit('messageHistory', { cid: value.cid, history: messageHistory });
+    callback({ cid: value.cid, history: messageHistory });
     // numOfMessages = chatLoadTest.messages.length > 20 ? 20 : chatLoadTest.messages.length;
   })
 
