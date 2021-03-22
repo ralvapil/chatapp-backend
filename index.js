@@ -9,6 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
 const User = require('./models/user');
 const Chat = require('./models/chat');
+const Message = require('./models/message');
 const ContactList = require('./models/contactList')
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -130,15 +131,39 @@ app.get('/', async function (req, res) {
 //   .save(function(err) {
 //     user_id = user._id;
 
-//     const chat = new Chat({6045a32b6dd4acfaf8ee6df8
-//       users: new Array(user._id),
-//       messages: [],
-//     });
+    // const chat = new Chat({
+    //   users: [
+    //     {
+    //       user: '6057c7a2687b02e16033eb50',
+    //       lastReadMsg: null,
+    //       unreadMsgCount: 0
+    //     },
+    //     {
+    //       user: '6057c7ec687b02e16033eb51',
+    //       lastReadMsg: null,
+    //       unreadMsgCount: 0
+    //     },
+    //   ],
+    // });
 
-//     chat_id = chat._id;
-//     chat.save(() => console.log('chat_id created', chat._id))
+    // chat_id = chat._id;
+    // chat.save(() => console.log('chat_id created', chat._id))
 //   })
 
+// const message = new Message({
+//   chat: "6057c91c83ad42e8e5017985",
+//   user: "6057c7a2687b02e16033eb50",
+//   senderName: 'Ramanan Alvapillai',
+//   value: "Hi there!"
+// })
+
+// message.save();
+
+// const selectedChat = Chat.findOne({ _id: '6057c91c83ad42e8e5017985'}, function(err, chatRes) {
+//   console.log('tes', chatRes)
+//   chatRes.recentMsgs.push(message);
+//   chatRes.save();
+// }).exec();
 
 io.on("connection", (socket) => {
   const userId = socket.handshake.query?.userId;
@@ -159,26 +184,31 @@ io.on("connection", (socket) => {
   socket.on('getConvos', async (user, callback) => {
     console.log('received request for convos', user);
 
-    const chats = await 
-    Chat
-      .aggregate([
-        { $match: { users:   mongoose.Types.ObjectId(user.user) } },
-        { $lookup: 
-          { 
-            from: 'users',
-            localField: 'users',
-            foreignField: '_id',
-            as: 'usersData'
-          }
-        }
-      ])
-      .exec();
+    // const chats = await 
+    // Chat
+    //   .aggregate([
+    //     { $match: { user: mongoose.Types.ObjectId(user.user) } },
+    //     { $lookup: 
+    //       { 
+    //         from: 'users',
+    //         localField: 'user',
+    //         foreignField: '_id',
+    //         as: 'usersData'
+    //       }
+    //     }
+    //   ])
+    //   .exec();
 
       // const chats = await 
       // Chat
       //   .find( { users: user.user } )
       //   .populate('users')
       //   .exec();
+
+    const chats = await 
+    Chat
+      .find({ "users.user": mongoose.Types.ObjectId(user.user) })
+      .exec();
 
       console.log('sending convos', chats);
       callback(chats)
@@ -188,17 +218,18 @@ io.on("connection", (socket) => {
   socket.on('messageHistory', async (value, callback) => {
     console.log('received message history request', value)
     //get the messages from the db
-    const chatLoadTest = await Chat.findOne({_id: value.cid});
+    const chatLoadTest = await Chat.findOne({ _id: value.cid });
+    const chats = await 
+    Chat
+      .findOne({ _id: value.cid })
+      .exec();
+
+      console.log('sending convos', chats);
+      callback(chats)
     console.log('chatLoad test', chatLoadTest);
     let messageHistory;
 
-    if(chatLoadTest.messages.length < 20) {
-      messageHistory = chatLoadTest.messages
-    } else {
-      messageHistory = chatLoadTest.messages.slice(Math.max(chatLoadTest.messages.length - 20, 0))
-    }
-
-    callback({ cid: value.cid, history: messageHistory });
+    callback({ chat: chats });
     // numOfMessages = chatLoadTest.messages.length > 20 ? 20 : chatLoadTest.messages.length;
   })
 
@@ -207,39 +238,42 @@ io.on("connection", (socket) => {
 
     const sender = await User.findOne({_id: value.userId}).exec();
     console.log('sender', sender)
+
     // create message insert obj
-    const messageInsert = {
+    const messageData = {
+      chat: value.cid,
       value: value.message,
       user: sender._id,
-      name: `${sender.firstName} ${sender.lastName}`
+      senderName: `${sender.firstName} ${sender.lastName}`
     };
 
-    console.log('insert obj', messageInsert);
-
-    const selectedChat = await Chat.findOne({ _id: value.cid }, function(err, chatRes) {
-      // console.log('tes', chatRes)
-      chatRes.messages.push(messageInsert);
-      chatRes.save();
-    }).exec();
-
-    const messageResponse = {
-      value: value.message,
-      user: sender._id,
-      name:`${sender.firstName} ${sender.lastName}`,
-      cid: value.cid,
-      timestamp: new Date()
-    };
-
-    console.log('response', messageResponse)
-  
+    const { message: messageResponse, selectedChat } = await insertMessage(messageData);
+    console.log('apres destructure', selectedChat)
     // send the message to all users of the room including the sender
-    selectedChat.users.forEach((uid) => {
-      io.in(uid.toString()).emit('message', messageResponse);
+    selectedChat.users.forEach((user) => {
+      console.log('in loop', user)
+      io.in(user.user.toString()).emit('message', messageResponse);
     })
   })
   // ...
 });
 
+const insertMessage = async (messageData) => {
+    console.log('message data', messageData)
+
+    const message = new Message(messageData);
+    await message.save();
+  
+    const selectedChat = await Chat.findOne({ _id: messageData.chat }, function(err, res) {
+      if(res.recentMsgs.length > 20) {
+        res.recentMsgs.shift();
+      }
+      res.recentMsgs.push(message);
+      res.save();
+    });
+
+    return { message, selectedChat };
+}
 // const PORT = process.env.PORT || 5000;
 // httpServer.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 

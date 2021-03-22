@@ -7,23 +7,18 @@ const messageSchema = new Schema({
     ref: 'Chat',
     required: true,
   },
-  message: [
-    {
-      value: String,
-      timestamp: { 
-        type: Date, 
-        default: Date.now,
-      },
-      user: { 
-        type: mongoose.Schema.ObjectId, 
-        ref: 'User',
-        required: false,
-      },
-      name: String,
-    }
-  ],
-  nickname: String,
+  user: { 
+    type: mongoose.Schema.ObjectId, 
+    ref: 'User',
+    required: false,
+  },
+  senderName: String,
+  value: String,
+  timestamp: { 
+    type: Date, 
+    default: Date.now,
+  },
 })
   
-module.exports = mongoose.model('Chat', chatSchema);
+module.exports = mongoose.model('Message', messageSchema);
 

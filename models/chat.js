@@ -2,15 +2,33 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const chatSchema = new Schema({
-  users:[
-    {
+  users:[{
+    user: {
+        type: mongoose.Schema.ObjectId, 
+        ref: 'User',
+        required: false,
+    },
+    firstName: {
+      type: String,
+      required: true
+    },
+    lastReadMsg: {
       type: mongoose.Schema.ObjectId, 
-      ref: 'User',
+      ref: 'Message',
       required: false,
+    },
+    unreadMsgCount: {
+      type: Number,
+      required: true,
     }
-  ],
-  messages: [
+  }],
+  recentMsgs:[
     {
+      _id: {
+        type: mongoose.Schema.ObjectId, 
+        ref: 'Message',
+        required: true,
+      },
       value: String,
       timestamp: { 
         type: Date, 
@@ -21,10 +39,14 @@ const chatSchema = new Schema({
         ref: 'User',
         required: false,
       },
-      name: String,
+      senderName: String,
+      required: false,
     }
   ],
-  nickname: String,
+  nickname: {
+    type: String,
+    required: false,
+  },
 })
   
 module.exports = mongoose.model('Chat', chatSchema);
