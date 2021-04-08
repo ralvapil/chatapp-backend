@@ -237,7 +237,6 @@ io.on("connection", (socket) => {
     console.log('on message value', value);
 
     const sender = await User.findOne({_id: value.userId}).exec();
-    console.log('sender', sender)
 
     // create message insert obj
     const messageData = {
@@ -247,15 +246,53 @@ io.on("connection", (socket) => {
       senderName: `${sender.firstName} ${sender.lastName}`
     };
 
-    const { message: messageResponse, selectedChat } = await insertMessage(messageData);
-    console.log('apres destructure', selectedChat)
+    const { message, selectedChat } = await insertMessage(messageData);
+    const userIdx = selectedChat.users.findIndex((user) => user.user.toString() === value.userId);
+    const response = {
+      user: {
+        _id: selectedChat.users[userIdx].user,
+        unreadMsgCount: selectedChat.users[userIdx].unreadMsgCount,
+      },
+      message 
+    }
+
     // send the message to all users of the room including the sender
     selectedChat.users.forEach((user) => {
-      console.log('in loop', user)
-      io.in(user.user.toString()).emit('message', messageResponse);
+      io.in(user.user.toString()).emit('message', response);
     })
   })
-  // ...
+
+  socket.on('readMessage', async (value) => {
+    console.log('read message request', value)
+
+    // get number of messages after message id sent
+    const unReadMsgCount = await Message.aggregate([
+      { $match: 
+        { chat: { $eq: value.cid },
+          _id: { $gt: mongoose.Types.ObjectId(value.lastMessage_id) }
+        }, 
+      },
+      { $count: "count"}
+    ])
+
+    const newUnReadMsgCount = unReadMsgCount.length > 0 ? unReadMsgCount.count : 0;
+
+    const chat = await Chat.findOne( {_id: value.cid } );
+    console.log('aggregate results', newUnReadMsgCount)
+
+    userIdx = chat.users.findIndex((user) => {
+
+      return user.user.toString() === value.userId
+    });
+    console.log('idx', userIdx);
+    chat.users[userIdx].lastReadMsg = mongoose.Types.ObjectId(value.lastMessage_id);
+    chat.users[userIdx].unreadMsgCount = newUnReadMsgCount
+
+    // update the unread count and the last read message for the user
+    console.log('chat as update is occuring', chat.users);
+    chat.save();
+    console.log('save done');
+  })
 });
 
 const insertMessage = async (messageData) => {
