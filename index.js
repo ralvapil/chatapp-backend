@@ -28,7 +28,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
-
+1
 passport.serializeUser(function(user, done) {
   console.log('serialize user', user);
   done(null, user.id);
@@ -72,6 +72,11 @@ app.use(cors({
   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
   "credentials": true,
 }));
+
+app.use(function(req, res, next) {
+  res.io = io;
+  next();
+})
 
 const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer, {
@@ -117,68 +122,12 @@ app.get('/', async function (req, res) {
   // contactList.save(() => console.log('contact list created: ', contactList))
 })
 
-// let chat_id = null;
-// let user_id = null;
-
-// const user = new User({
-//   firstName: 'Ram',
-//   lastName: 'Alva',
-//   email: 'ramanan.a125@gmail.com',
-//   googleId: '123'
-// });
-
-// user
-//   .save(function(err) {
-//     user_id = user._id;
-
-    // const chat = new Chat({
-    //   users: [
-    //     {
-    //       user: '6057c7a2687b02e16033eb50',
-    //       lastReadMsg: null,
-    //       unreadMsgCount: 0
-    //     },
-    //     {
-    //       user: '6057c7ec687b02e16033eb51',
-    //       lastReadMsg: null,
-    //       unreadMsgCount: 0
-    //     },
-    //   ],
-    // });
-
-    // chat_id = chat._id;
-    // chat.save(() => console.log('chat_id created', chat._id))
-//   })
-
-// const message = new Message({
-//   chat: "6057c91c83ad42e8e5017985",
-//   user: "6057c7a2687b02e16033eb50",
-//   senderName: 'Ramanan Alvapillai',
-//   value: "Hi there!"
-// })
-
-// message.save();
-
-// const selectedChat = Chat.findOne({ _id: '6057c91c83ad42e8e5017985'}, function(err, chatRes) {
-//   console.log('tes', chatRes)
-//   chatRes.recentMsgs.push(message);
-//   chatRes.save();
-// }).exec();
-
 io.on("connection", (socket) => {
   const userId = socket.handshake.query?.userId;
   // add to room keyed by user id
   socket.join(userId);
   console.log('created room for', userId)
 
-  // if(connected.length === 0) {
-  //   socket.join(start);
-  // } else {
-  //   start++;
-  //   socket.join(start);
-  // }
-
-  // connected.push(start);
   const messages = [];
 
   socket.on('getConvos', async (user, callback) => {
