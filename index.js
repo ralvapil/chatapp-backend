@@ -13,6 +13,9 @@ const Message = require('./models/message');
 const ContactList = require('./models/contactList')
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const authRoutes = require('./routes/authRoutes');
+const getSocketRoutes = require('./routes/socketRoutes');
+const UserService = require('./services/UserService');
 
 
 app.use(cookieParser('cats'));
@@ -28,17 +31,21 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
-1
+app.use(function(req, res, next) {
+  res.io = io;
+  next();
+})
+
+app.use('/auth' ,authRoutes);
+
 passport.serializeUser(function(user, done) {
   console.log('serialize user', user);
   done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    console.log('deserlized user', user)
-    done(err, user);
-  });
+  const user = UserService.getUser(id);
+  done(null, user);
 });
 
 passport.use(new GoogleStrategy({
@@ -50,10 +57,11 @@ function(accessToken, refreshToken, profile, done) {
   // console.log('accesstoken', accessToken);
   // console.log('refreshToken', refreshToken);
   // console.log('profile', profile);
-
-     User.findOrCreate(profile, function (err, user) {
-       return done(err, user);
-     });
+    UserService.findByGoogleIdOrCreate(profile);
+    return done(err, user);
+    //  User.findOrCreate(profile, function (err, user) {
+    //    return done(err, user);
+    //  });
 }
 ));
 
@@ -73,10 +81,8 @@ app.use(cors({
   "credentials": true,
 }));
 
-app.use(function(req, res, next) {
-  res.io = io;
-  next();
-})
+
+
 
 const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer, {
@@ -129,6 +135,8 @@ io.on("connection", (socket) => {
   console.log('created room for', userId)
 
   const messages = [];
+
+  getSocketRoutes();
 
   socket.on('getConvos', async (user, callback) => {
     console.log('received request for convos', user);

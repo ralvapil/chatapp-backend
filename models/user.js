@@ -34,8 +34,9 @@ userSchema.statics.findOrCreate = function(profile, callback) {
         user.email = profile.emails[0].value; 
 
         user.save(callback);
+        return user;
       }else{
-        callback(err, result);
+        return result;
       }
   });
 }
