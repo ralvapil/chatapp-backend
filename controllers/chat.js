@@ -1,7 +1,7 @@
 const ChatService = require('../services/ChatService')
 
 const chatController = {
-  getConvos(user, callback) {
+  async getConvos(user, callback) {
     console.log('received request for convos', user);
 
     const chats = await ChatService.getUserChats(user.user);
@@ -9,7 +9,7 @@ const chatController = {
     console.log('sending convos', chats);
     callback(chats) 
   },
-  getMessageHistory() {
+  async getMessageHistory() {
     console.log('received message history request', value)
     //get the messages from the db
     const chat = await ChatService.getChat(value.cid);

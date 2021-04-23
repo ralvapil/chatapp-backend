@@ -1,16 +1,19 @@
-const Message = require('../models/Message');
-const User = require('../models/User');
+const Message = require('../models/message');
+const User = require('../models/user');
 
 class PrepareSentMessageService {
-  async constructor(cid, messageText, userId, message = null, chat = null) {
+  constructor(cid, messageText, userId, message = null, chat = null) {
     this.cid = cid;
     this.messageText = messageText;
     this.userId = userId;
     this.message = message;
     this.chat = chat;
-    this.sender = await User.findOne({userId}).exec();
+    this.sender;
     this.messageData = this.setMessageData(cid, messageText, userId)
-    
+  }
+
+  async prepare() {
+    this.sender = await User.findOne({userId}).exec();
     this.createMessage();
     this.addMessageToChat();
   }

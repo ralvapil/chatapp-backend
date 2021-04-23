@@ -1,8 +1,8 @@
-const User = require('../models/User');
+const User = require('../models/user');
 
 class UserService {
   constructor() {
-    this.modelInstance = Chat;
+    this.modelInstance = User;
   }
 
   static getUser ( id ) {
@@ -32,22 +32,22 @@ class UserService {
 
 module.exports = UserService;
 
-userSchema.statics.findOrCreate = function(profile, callback) {
-  console.log('profile', profile)
+// userSchema.statics.findOrCreate = function(profile, callback) {
+//   console.log('profile', profile)
 
-  const user = new this();
+//   const user = new this();
 
-  this.findOne({googleId : profile.id},function(err,result){ 
-      if(!result){
-        user.firstName = profile.name.givenName;
-        user.lastName = profile.name.familyName;
-        user.googleId = profile.id
-        user.email = profile.emails[0].value; 
+//   this.findOne({googleId : profile.id},function(err,result){ 
+//       if(!result){
+//         user.firstName = profile.name.givenName;
+//         user.lastName = profile.name.familyName;
+//         user.googleId = profile.id
+//         user.email = profile.emails[0].value; 
 
-        user.save();
-        return user;
-      }else{
-        return result;
-      }
-  });
-}
+//         user.save();
+//         return user;
+//       }else{
+//         return result;
+//       }
+//   });
+// }

@@ -10,8 +10,8 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
   }
 )
 
-router.get('/userStatus', function (req, res) {
-  console.log('userStatus request received')
+router.get('/getUserStatus', function (req, res) {
+  console.log('getUserStatus request received')
 
   if(!req?.user) {
     console.log('reject, not authorized')
@@ -23,4 +23,4 @@ router.get('/userStatus', function (req, res) {
   // return res.status(200).send()
 })
 
-module.exports = router
+module.exports = router;

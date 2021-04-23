@@ -2,11 +2,12 @@ const PrepareSentMessageService = require('../services/PrepareSentMessageService
 const SendMessageService = require('../services/SendMessageService')
 
 const messageController = {
-  sendMessage(data) {
-    const preparedMessage = await PrepareSentMessageService(data.cid, data.message, data.userId);
-    const sendMessageService = SendMessageService(preparedMessage);
+  async sendMessage(data) {
+    const preparedMessage = PrepareSentMessageService(data.cid, data.message, data.userId);
+    await preparedMessage.prepare();
 
-    sendMessageService.sendToGroup();
+    const sendMessageService = SendMessageService(preparedMessage);
+    await sendMessageService.sendToGroup();
   },
 }
 
