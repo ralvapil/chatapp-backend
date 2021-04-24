@@ -20,7 +20,7 @@ class PrepareSentMessageService {
     this.setMessageData()
     await this.createMessage();
     await this.addMessageToChat();
-    await this.incrementUnreadMsgCount();
+    await this.incrementUnreadMsgCount(this.sender._id);
   }
 
   setMessageData() {
@@ -55,17 +55,20 @@ class PrepareSentMessageService {
     await this.chat.save();
   }
 
-  async incrementUnreadMsgCount() {
+  async incrementUnreadMsgCount(senderId) {
     // update unread messages for each user in chat upon message preparation
-    this.chat.users.forEach(async (val, idx) => {
-      await Chat.updateOne(
-        {_id: this.chat._id,},
-        { 
-          $inc: {
-           [`users.${idx}.unreadMsgCount`]: 1
+    this.chat.users.forEach(async (chatUser, idx) => {
+      // do NOT increment for sender
+      if(chatUser.user.toString() !== senderId.toString()) {
+        await Chat.updateOne(
+          {_id: this.chat._id,},
+          { 
+            $inc: {
+             [`users.${idx}.unreadMsgCount`]: 1
+            }
           }
-        }
-      )
+        )
+      }
     })
 
     await this.getLatestChat();
