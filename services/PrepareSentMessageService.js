@@ -53,6 +53,10 @@ class PrepareSentMessageService {
     this.chat.recentMsgs.push(this.message);
     await this.chat.save();
   }
+
+  async setRecentMsgs(recentMsgs) {
+    this.chat.recentMsgs = recentMsgs;
+  }
 }
 
 module.exports = PrepareSentMessageService;
