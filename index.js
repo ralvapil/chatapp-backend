@@ -26,6 +26,21 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(cors({
+  "origin": "http://localhost:3000",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "credentials": true,
+}));
+
+const httpServer = http.createServer(app);
+const io = require("socket.io")(httpServer, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  },
+});
+
 app.use(function(req, res, next) {
   // attach io instance to res obj incase we need it
   res.io = io;
@@ -69,19 +84,7 @@ setupPassport();
 //   }
 // );
 
-app.use(cors({
-  "origin": "http://localhost:3000",
-  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "credentials": true,
-}));
 
-const httpServer = http.createServer(app);
-const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  },
-});
 
 // app.get('/userStatus', function (req, res) {
 //   console.log('userStatus request received')
