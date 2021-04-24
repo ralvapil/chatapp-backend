@@ -18,12 +18,9 @@ const setupPassport = () => {
     clientSecret: 'fnTOqOhBNLB7wvsU5MkfpHj1',
     callbackURL: "http://localhost:5000/auth/google/callback"
   },
-    function(accessToken, refreshToken, profile, done) {
-        UserService.findByGoogleIdOrCreate(profile);
-        return done(err, user);
-        //  User.findOrCreate(profile, function (err, user) {
-        //    return done(err, user);
-        //  });
+    async function(accessToken, refreshToken, profile, done) {
+        const user = await UserService.findByGoogleIdOrCreate(profile);
+        return done(null, user);
     }
   ));
 }

@@ -1,32 +1,29 @@
+const user = require('../models/user');
 const User = require('../models/user');
 
 class UserService {
-  constructor() {
-    this.modelInstance = User;
-  }
-
-  static getUser ( id ) {
+  static async getUser ( id ) {
     try { 
-      return this.modelInstance.findById(id);
+      return await User.findById(id);
     } catch(err) {
       // TODO error handling
       return null;
     }
   }
 
-  static findByGoogleIdOrCreate (profile) {
-    this.modelInstance.findOne({googleId : profile.id},function(err,result){ 
-      if(!result){
-        user.firstName = profile.name.givenName;
-        user.lastName = profile.name.familyName;
-        user.googleId = profile.id
-        user.email = profile.emails[0].value; 
+  static async findByGoogleIdOrCreate (profile) {
+    const user = await User.findOne({googleId : profile.id})
 
-        user.save(callback);
-      }else{
-        callback(err, result);
-      }
-  });
+    if(!user) {
+      user.firstName = profile.name.givenName;
+      user.lastName = profile.name.familyName;
+      user.googleId = profile.id
+      user.email = profile.emails[0].value; 
+
+      await user.save();
+    }
+
+    return user;
   }
 }
 
