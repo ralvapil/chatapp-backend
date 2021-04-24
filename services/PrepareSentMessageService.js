@@ -20,6 +20,7 @@ class PrepareSentMessageService {
     this.setMessageData()
     await this.createMessage();
     await this.addMessageToChat();
+    await this.incrementUnreadMsgCount();
   }
 
   setMessageData() {
@@ -52,6 +53,20 @@ class PrepareSentMessageService {
 
     this.chat.recentMsgs.push(this.message);
     await this.chat.save();
+  }
+
+  async incrementUnreadMsgCount() {
+    // this.chat.update
+    this.chat.users.forEach(async (val, idx) => {
+      await Chat.updateOne(
+        {_id: this.chat._id,},
+        { 
+          $inc: {
+           [`users.${idx}.unreadMsgCount`]: 1
+          }
+        }
+      )
+    })
   }
 
   async setRecentMsgs(recentMsgs) {
