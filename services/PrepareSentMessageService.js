@@ -56,7 +56,7 @@ class PrepareSentMessageService {
   }
 
   async incrementUnreadMsgCount() {
-    // this.chat.update
+    // update unread messages for each user in chat upon message preparation
     this.chat.users.forEach(async (val, idx) => {
       await Chat.updateOne(
         {_id: this.chat._id,},
