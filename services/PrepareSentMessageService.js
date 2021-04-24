@@ -1,33 +1,37 @@
 const Message = require('../models/message');
 const User = require('../models/user');
+const Chat = require('../models/chat');
+
+const mongoose = require('mongoose');
 
 class PrepareSentMessageService {
-  constructor(cid, messageText, userId, message = null, chat = null) {
-    this.cid = cid;
+  constructor(cid, messageText, userId, message = null) {
+    this.cid = mongoose.Types.ObjectId(cid);
     this.messageText = messageText;
-    this.userId = userId;
+    this.userId = mongoose.Types.ObjectId(userId);
     this.message = message;
-    this.chat = chat;
+    this.chat;
     this.sender;
-    this.messageData = this.setMessageData(cid, messageText, userId)
+    this.messageData;
   }
 
   async prepare() {
-    this.sender = await User.findOne({userId}).exec();
-    this.createMessage();
-    this.addMessageToChat();
+    this.sender = await User.findOne(this.userId).exec();
+    this.setMessageData()
+    await this.createMessage();
+    await this.addMessageToChat();
   }
 
-  setMessageData(cid, messageText, userId) {
+  setMessageData() {
     this.messageData = {
-      chat: cid,
-      value: messageText,
-      user: userId,
-      senderName: `${sender.firstName} ${sender.lastName}`
+      chat: this.cid,
+      value: this.messageText,
+      user: this.userId,
+      senderName: `${this.sender.firstName} ${this.sender.lastName}`
     };
   }
 
-  static async createMessage() {
+  async createMessage() {
     this.message = new Message(this.messageData);
 
     try { 
@@ -40,13 +44,14 @@ class PrepareSentMessageService {
   }
 
   async addMessageToChat() {
-    this.chat = await Chat.findOne({ _id: this.cid }, function(err, res) {
-      if(res.recentMsgs.length > 20) {
-        res.recentMsgs.shift();
-      }
-      res.recentMsgs.push(message);
-      res.save();
-    });
+    this.chat = await Chat.findOne(this.cid).exec();
+
+    if(this.chat.recentMsgs.length > 20) {
+      this.chat.recentMsgs.shift();
+    }
+
+    this.chat.recentMsgs.push(this.message);
+    await this.chat.save();
   }
 }
 
