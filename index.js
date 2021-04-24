@@ -128,7 +128,7 @@ io.on("connection", (socket) => {
   socket.join(userId);
   console.log('created room for', userId)
 
-  getSocketRoutes();
+  getSocketRoutes(socket, io);
 
   // socket.on('getConvos', async (user, callback) => {
   //   console.log('received request for convos', user);
