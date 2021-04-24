@@ -67,6 +67,12 @@ class PrepareSentMessageService {
         }
       )
     })
+
+    await this.getLatestChat();
+  }
+
+  async getLatestChat() {
+    this.chat = await Chat.findOne(this.cid).exec();
   }
 
   async setRecentMsgs(recentMsgs) {
