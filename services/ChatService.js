@@ -1,13 +1,10 @@
 const Chat = require('../models/chat');
+const mongoose = require('mongoose');
 
 class ChatService {
-  constructor() {
-    this.modelInstance = Chat;
-  }
-
   static async getUserChats ( userId ) {
     try { 
-      return await this.modelInstance.find({ "users.user": mongoose.Types.ObjectId(userId) });
+      return await Chat.find({ "users.user": mongoose.Types.ObjectId(userId) }).exec();
     } catch(err) {
       // TODO error handling
       return null;
@@ -34,7 +31,7 @@ class ChatService {
 
   static async getChat ( cid ) {
     try{
-      return await this.modelInstance
+      return await Chat
         .findOne({ _id: cid })
     } catch(err) {
       // TODO error handling
