@@ -8,8 +8,8 @@ const setupPassport = () => {
     done(null, user.id);
   });
   
-  passport.deserializeUser(function(id, done) {
-    const user = UserService.getUser(id);
+  passport.deserializeUser(async function(id, done) {
+    const user = await UserService.getUser(id);
     done(null, user);
   });
   
