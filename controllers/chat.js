@@ -14,6 +14,13 @@ const chatController = {
     // TODO not sure which callback is used?
     callback(chat)
     callback({ chat });
+  },
+  async readMessage(data, callback) {
+    const { cid, message, user } = data;
+    const chat = await ChatService.userReadMessage(cid, message, user);
+
+    // send updated chat
+    callback(chat)
   }
 }
 

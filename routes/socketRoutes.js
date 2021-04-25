@@ -1,6 +1,7 @@
 const chatController = require('../controllers/chat')
 const messageController = require('../controllers/message')
 const userController = require('../controllers/user')
+const message = require('../models/message')
 
 const getSocketRoutes = (socket, io) => {
   socket.on('getConvos', async (user, callback) =>  {
@@ -11,8 +12,12 @@ const getSocketRoutes = (socket, io) => {
     chatController.getMessageHistory(value, callback)
   )
 
-  socket.on('sendMessage', async (data) => {
-    messageController.sendMessage(data, io);
+  socket.on('sendMessage', async (data, callback) => {
+    messageController.sendMessage(data, io, callback);
+  })
+
+  socket.on('readMessage', async (data, callback) => {
+    chatController.readMessage(data, callback);
   })
 }
 

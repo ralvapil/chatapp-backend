@@ -32,11 +32,24 @@ class ChatService {
   static async getChat ( cid ) {
     try{
       return await Chat
-        .findOne({ _id: cid })
+        .findOne({ _id: mongoose.Types.ObjectId(cid) })
     } catch(err) {
       // TODO error handling
       return null;
     }
+  }
+
+  static async userReadMessage(cid, message, reader) {
+    const chat = await this.getChat(cid);
+
+    chat.users.forEach((user, idx) => {
+      // set reader unread count to 0 and update last read message
+      if(user.user == reader) {
+        chat.users[idx].unreadMsgCount = 0;
+        chat.users[idx].lastReadMsg = mongoose.Types.ObjectId(message._id)
+      }
+    })
+    return await chat.save()
   }
 }
 

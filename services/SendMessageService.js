@@ -9,19 +9,22 @@ class SendMessageService {
     // remove recent messages in chat from message sent
     this.preparedMessage.setRecentMsgs([]);
 
-    const response = {
+    //send the message to all users except sender
+    this.preparedMessage.chat.users.forEach((user) => {
+      if(user.user.toString() !== this.preparedMessage.sender._id.toString()) {
+        io.in(user.user.toString()).emit('message', this.getUserMessage(user.user));
+      }
+    })
+  }
+
+  getUserMessage(user) {
+    return {
       user: {
-        _id: this.preparedMessage.chat.users[userIdx].user,
-        unreadMsgCount: this.preparedMessage.chat.users[userIdx].unreadMsgCount,
+        _id: user,
       },
       message: this.preparedMessage.message,
       chat: this.preparedMessage.chat
     }
-
-    // send the message to all users of the room including the sender
-    this.preparedMessage.chat.users.forEach((user) => {
-      io.in(user.user.toString()).emit('message', response);
-    })
   }
 }
 
