@@ -1,4 +1,3 @@
-const user = require('../models/user');
 const User = require('../models/user');
 
 class UserService {
@@ -8,6 +7,14 @@ class UserService {
     } catch(err) {
       // TODO error handling
       return null;
+    }
+  }
+
+  static async getUserByEmail ( email ) {
+    try {
+      return await User.findOne({ email });
+    } catch(err) {
+      return null
     }
   }
 

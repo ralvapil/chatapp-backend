@@ -8,6 +8,7 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
 const passport = require('passport')
+const ContactList = require('./models/contactList')
 
 const authRoutes = require('./routes/authRoutes');
 const getSocketRoutes = require('./routes/socketRoutes');
@@ -50,6 +51,20 @@ app.use(function(req, res, next) {
 app.use('/auth', authRoutes);
 setupPassport();
 
+async function getTest() {
+  const test = await ContactList.findOne({user: mongoose.Types.ObjectId('6057c7a2687b02e16033eb50')}).populate('contacts.user').exec();
+
+  console.log('test', test.contacts[0])
+  // test.contacts.push( {user: mongoose.Types.ObjectId('6057c7ec687b02e16033eb51'), nickname: ''});
+  // await test.save();
+  // console.log('test after', test)
+}
+
+getTest();
+
+// const test = ContactList.findOne({user: mongoose.Types.ObjectId('6057c7a2687b02e16033eb50')}).populate({contacts.})
+  // test.contacts.push( mongoose.Types.ObjectId('6057c7ec687b02e16033eb51'));
+  // test.save();
 // passport.serializeUser(function(user, done) {
 //   console.log('serialize user', user);
 //   done(null, user.id);

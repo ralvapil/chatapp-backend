@@ -19,6 +19,10 @@ const getSocketRoutes = (socket, io) => {
   socket.on('readMessage', async (data, callback) => {
     chatController.readMessage(data, callback);
   })
+
+  socket.on('addContact', async (data, callback) => {
+    userController.addContact(data, callback);
+  })
 }
 
 module.exports = getSocketRoutes;
