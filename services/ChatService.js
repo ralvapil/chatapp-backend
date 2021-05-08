@@ -19,7 +19,6 @@ class ChatService {
       .findOne({ _id:cid })
       .exec();
 
-
     // TODO: figure out which of these to use
     console.log('sending convos', chats);
     callback(chats)

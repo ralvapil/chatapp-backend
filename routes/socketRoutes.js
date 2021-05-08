@@ -23,6 +23,19 @@ const getSocketRoutes = (socket, io) => {
   socket.on('addContact', async (data, callback) => {
     userController.addContact(data, callback);
   })
+
+  socket.on('getContacts', async (data, callback) => {
+    userController.getUserContacts(data, callback);
+  })
+
+  socket.on('createChat', async (data, callback) => {
+    chatController.createChat(data, callback);
+  })
+
+  socket.on('checkChatExists', async(data) => {
+    console.log('received in routes')
+    chatController.checkChatExists(data);
+  })
 }
 
 module.exports = getSocketRoutes;

@@ -10,6 +10,12 @@ const userController = {
     }
 
     return callback(null)
+  },
+
+  async getUserContacts(data, callback) {
+    const contactList = await ContactListService.getUserContactList(data.user);
+    console.log('cl', contactList)
+    return callback(contactList);
   }
 }
 
