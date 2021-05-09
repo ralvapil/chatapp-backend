@@ -12,6 +12,10 @@ const chatSchema = new Schema({
       type: String,
       required: true
     },
+    lastName: {
+      type: String,
+      required: true
+    },
     lastReadMsg: {
       type: mongoose.Schema.ObjectId, 
       ref: 'Message',
@@ -48,6 +52,11 @@ const chatSchema = new Schema({
     type: String,
     required: false,
   },
+  isGroup: {
+    type: Boolean,
+    required: true,
+    default: false
+  }
 })
   
 module.exports = mongoose.model('Chat', chatSchema);

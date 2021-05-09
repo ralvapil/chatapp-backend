@@ -5,9 +5,22 @@ const Chat = require('../models/chat')
 const mongoose = require('mongoose');
 
 class ContactListService {
+  static async create (user) {
+    try {
+      const cl = new ContactList();
+      cl.user = mongoose.Types.ObjectId(user);
+      cl.contacts = [];
+
+      return await cl.save();
+    } catch(err) {
+      console.log(err);
+      return null;
+    }
+  }
+
   static async addContact ( email, user ) {
     try {
-      const newContact = await User.findOne({ email });
+      const newContact = await User.findOne({ email: email.trim() });
       console.log('newcontact', newContact)
       if(!newContact) {
         // newContact user does not exist
@@ -15,12 +28,15 @@ class ContactListService {
       }
 
       // check if user already exists in contact list
+      
       const contactList = await this.getUserContactList(user)
+      console.log('contact', contactList)
       const isAlreadyExists = contactList.length > 0 ? contactList.filter((contact) => contact.user.email === email).length > 0 : false;
 
       // insert into contact list
       if(!isAlreadyExists) {
         contactList.contacts.push({user: newContact._id});
+        console.log(contactList);
         await contactList.save();
 
         //refresh populated list
@@ -34,31 +50,49 @@ class ContactListService {
   }
 
   static async getUserContactList(user) {
-    const contactList = await 
-      ContactList
-        .findOne({user: mongoose.Types.ObjectId(user)})
-        .populate('contacts.user')
-        .exec();
+   return await 
+    ContactList
+      .findOne({user: mongoose.Types.ObjectId(user)})
+      .populate('contacts.user')
+      .exec();
+  }
 
+  static async getUserContactListPopulated(user) {
+    console.log('in fn user', user)
+
+    const contactList = await this.getUserContactList(user);
+    console.log('cl test', contactList)
     const { contacts } = contactList;
+
+    console.log('in fn contacts', contacts)
 
     const contactListWithChats = await Promise.all(
       contacts.map(async (contact, index) => {
-        const chats = await Chat.find({ 
-          'users.user': 
-            {"$in": 
-              [ 
-                mongoose.Types.ObjectId(user), 
-                mongoose.Types.ObjectId(contact.user._id) 
-              ]
-            }
+        // const chats = await Chat.find({ 
+        //   'users.user': 
+        //     {"$eq": 
+        //       [ 
+        //         mongoose.Types.ObjectId(user), 
+        //         mongoose.Types.ObjectId(contact.user._id) 
+        //       ]
+        //     }
+        // })
+
+        const chats = await Chat.find({
+          'users.user': {
+            $all: [mongoose.Types.ObjectId(user), 
+              mongoose.Types.ObjectId(contact.user._id)]
+          }
         })
+
+        console.log('chattt', chats)
 
         const retContact = {
           firstName: contact.user.firstName,
           lastName: contact.user.lastName,
           user: contact.user._id,
-          _id: contact._id
+          _id: contact._id,
+          picture: contact.user.picture,
         }
 
         // loop through chats and check if users.length == 2 and one is contact
@@ -78,7 +112,7 @@ class ContactListService {
   }
 
   static async getUserContact(user, userToCheck) {
-    const { contacts } = await this.getUserContactList(user);
+    const { contacts } = await this.getUserContactListPopulated(user);
     const contact = contacts.filter((contact) => contact.user._id.toString() === userToCheck);
 
     return contact;

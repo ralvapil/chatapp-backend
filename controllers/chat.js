@@ -4,6 +4,7 @@ const CreateChatService = require('../services/CreateChatService')
 const chatController = {
   async getConvos(user, callback) {
     const chats = await ChatService.getUserChats(user.user);
+    console.log(chats)
     callback(chats) 
   },
 
@@ -31,18 +32,25 @@ const chatController = {
     const chat = await CreateChatService.create(data.user, data.contact)
   },
 
-  async createChat(data, callback) {
-    const chat = await CreateChatService.create(data.user, data.contact)
+  async createChat(data, callback, io) {
+    console.log('in create', data)
+    const chat = await CreateChatService.create(data.user, data.members)
 
     // loop through each chat member and refresh their chats
-    await Promise.all(
-      chat.users.forEach(async(user) => {
-        const convos = await this.getConvos(user.user);
-        io.in(user.user.toString()).emit('newConvosPushed', convos);
-      })
-    )
+    
 
-    callback(chat);
+    chat.users.forEach( async(user) => {
+      console.log('sending for user', user)
+      const convos = await ChatService.getUserChats(user.user);
+      console.log('convos sent', convos)
+      io.in(user.user.toString()).emit('newConvosPushed', { 
+        user: user.user, convos
+      });
+      console.log('convo emitted')
+    })
+    
+
+    callback(chat._id);
   }
 }
 

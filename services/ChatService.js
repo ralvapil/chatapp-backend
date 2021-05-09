@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 
 class ChatService {
   static async getUserChats ( userId ) {
+    console.log('chats')
     try { 
+      console.log('find', userId)
       return await Chat.find({ "users.user": mongoose.Types.ObjectId(userId) }).exec();
     } catch(err) {
       // TODO error handling

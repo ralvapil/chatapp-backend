@@ -29,7 +29,8 @@ const getSocketRoutes = (socket, io) => {
   })
 
   socket.on('createChat', async (data, callback) => {
-    chatController.createChat(data, callback);
+    console.log('data', data)
+    chatController.createChat(data, callback, io);
   })
 
   socket.on('checkChatExists', async(data) => {
