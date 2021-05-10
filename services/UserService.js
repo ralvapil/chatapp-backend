@@ -37,7 +37,15 @@ class UserService {
 
       // TODO: create contactlist should be using another service
       const contactList = await ContactListService.create(user._id);
+      return user;
     }
+    console.log(profile)
+    if(profile.name.givenName & user.firstName !== profile.name.givenName) user.firstName = profile.name.givenName;
+    if(profile.name.familyName & user.lastName !== profile.name.familyName) user.lastName = profile.name.familyName;
+    if(profile.emails[0]?.value & user.email !== profile.emails[0]?.value) user.email = profile.emails[0].value;
+    if(profile?.photos[0]?.value && user.picture !== profile?.photos[0]?.value) user.picture = profile?.photos[0]?.value;
+
+    await user.save();
 
     return user;
   }

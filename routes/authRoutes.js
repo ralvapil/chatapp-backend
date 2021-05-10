@@ -17,7 +17,7 @@ router.get('/getUserStatus', async function (req, res) {
   }
   
   console.log('after status', req.user)
-  res.status(200).json({ user: req.user.id})
+  res.status(200).json({ user: req.user.id, picture: req.user.picture})
   // return res.status(200).send()
 })
 

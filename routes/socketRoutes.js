@@ -13,7 +13,7 @@ const getSocketRoutes = (socket, io) => {
   )
 
   socket.on('sendMessage', async (data, callback) => {
-    messageController.sendMessage(data, io, callback);
+    messageController.sendMessage(data, io, socket, callback);
   })
 
   socket.on('readMessage', async (data, callback) => {
