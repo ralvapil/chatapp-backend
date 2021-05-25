@@ -8,7 +8,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node test.js"
+    "dev": "nodemon src/app.js --exec \"npm run lint && node\"",
+    "lint": "eslint .",
+    "test": "node test.js",
+    "prepare": "husky install"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -26,7 +29,14 @@
     "socket.io": "^3.1.2"
   },
   "devDependencies": {
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-xo": "^0.36.0",
     "got": "^11.3.0",
+    "husky": "^6.0.0",
+    "lint-staged": "^11.0.0",
+    "prettier": "^2.3.0",
+    "pretty-quick": "^3.1.0",
     "tape": "^4.7.0"
   },
   "repository": {
@@ -38,5 +48,9 @@
     "heroku",
     "express"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,css,md}": "prettier --write"
+  }
 }
