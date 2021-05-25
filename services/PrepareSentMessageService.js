@@ -1,8 +1,8 @@
-const Message = require('../models/message');
-const User = require('../models/user');
-const Chat = require('../models/chat');
+const Message = require("../models/message");
+const User = require("../models/user");
+const Chat = require("../models/chat");
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 class PrepareSentMessageService {
   constructor(cid, messageText, userId, message = null) {
@@ -17,7 +17,7 @@ class PrepareSentMessageService {
 
   async prepare() {
     this.sender = await User.findOne(this.userId).exec();
-    this.setMessageData()
+    this.setMessageData();
     await this.createMessage();
     await this.addMessageToChat();
     await this.incrementUnreadMsgCount(this.sender._id);
@@ -28,17 +28,17 @@ class PrepareSentMessageService {
       chat: this.cid,
       value: this.messageText,
       user: this.userId,
-      senderName: `${this.sender.firstName} ${this.sender.lastName}`
+      senderName: `${this.sender.firstName} ${this.sender.lastName}`,
     };
   }
 
   async createMessage() {
     this.message = new Message(this.messageData);
 
-    try { 
+    try {
       await this.message.save();
       return this.message;
-    } catch(err) {
+    } catch (err) {
       // TODO error handling
       return null;
     }
@@ -47,7 +47,7 @@ class PrepareSentMessageService {
   async addMessageToChat() {
     this.chat = await Chat.findOne(this.cid).exec();
 
-    if(this.chat.recentMsgs.length > 20) {
+    if (this.chat.recentMsgs.length > 20) {
       this.chat.recentMsgs.shift();
     }
 
@@ -60,19 +60,18 @@ class PrepareSentMessageService {
       // update unread messages for each user in chat upon message preparation
       this.chat.users.map(async (chatUser, idx) => {
         // do NOT increment for sender
-        if(chatUser.user.toString() !== senderId.toString()) {
+        if (chatUser.user.toString() !== senderId.toString()) {
           await Chat.updateOne(
-            {_id: this.chat._id,},
-            { 
+            { _id: this.chat._id },
+            {
               $inc: {
-              [`users.${idx}.unreadMsgCount`]: 1
-              }
+                [`users.${idx}.unreadMsgCount`]: 1,
+              },
             }
-          )
+          );
         }
       })
-    )
-    
+    );
 
     await this.getLatestChat();
   }

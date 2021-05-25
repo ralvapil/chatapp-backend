@@ -1,4 +1,4 @@
-const Message = require('../models/message');
+const Message = require("../models/message");
 
 class MessageService {
   constructor() {
@@ -8,15 +8,14 @@ class MessageService {
   static async create(messageData) {
     const message = new Message(messageData);
 
-    try { 
+    try {
       await message.save();
       return message;
-    } catch(err) {
+    } catch (err) {
       // TODO error handling
       return null;
     }
   }
-
 }
 
 module.exports = MessageService;

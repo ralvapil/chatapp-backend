@@ -1,60 +1,63 @@
-require('dotenv').config()
-const cors = require('cors');
+require("dotenv").config();
+const cors = require("cors");
 const http = require("http");
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
-const passport = require('passport')
-const ContactList = require('./models/contactList')
+const cookieParser = require("cookie-parser");
+const passport = require("passport");
+const ContactList = require("./models/contactList");
 
-const authRoutes = require('./routes/authRoutes');
-const getSocketRoutes = require('./routes/socketRoutes');
-const setupPassport = require('./setupPassport');
+const authRoutes = require("./routes/authRoutes");
+const getSocketRoutes = require("./routes/socketRoutes");
+const setupPassport = require("./setupPassport");
 
-app.use(cookieParser('cats'));
-app.use(session({ 
-  secret: "cats", 
-  cookie: { 
-    secure: false, 
-    maxAge: 24*60*60*1000 
-  },
-  // name: 'chat-app-demo'
-}));
+app.use(cookieParser("cats"));
+app.use(
+  session({
+    secret: "cats",
+    cookie: {
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+    // name: 'chat-app-demo'
+  })
+);
 // app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors({
-  "origin": "http://localhost:3000",
-  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "credentials": true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 
 const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
   },
 });
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   // attach io instance to res obj incase we need it
   res.io = io;
   next();
-})
+});
 
-app.use('/auth', authRoutes);
+app.use("/auth", authRoutes);
 setupPassport();
 
-
 // const test = ContactList.findOne({user: mongoose.Types.ObjectId('6057c7a2687b02e16033eb50')}).populate({contacts.})
-  // test.contacts.push( mongoose.Types.ObjectId('6057c7ec687b02e16033eb51'));
-  // test.save();
+// test.contacts.push( mongoose.Types.ObjectId('6057c7ec687b02e16033eb51'));
+// test.save();
 // passport.serializeUser(function(user, done) {
 //   console.log('serialize user', user);
 //   done(null, user.id);
@@ -82,14 +85,12 @@ setupPassport();
 // app.get('/auth/google',
 //   passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// app.get('/auth/google/callback', 
+// app.get('/auth/google/callback',
 //   passport.authenticate('google', { failureRedirect: '/login' }),
 //   function(req, res) {
 //     res.redirect('http://localhost:3000/chats');
 //   }
 // );
-
-
 
 // app.get('/userStatus', function (req, res) {
 //   console.log('userStatus request received')
@@ -131,19 +132,19 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.query?.userId;
   // add to room keyed by user id
   socket.join(userId);
-  console.log('created room for', userId)
+  console.log("created room for", userId);
 
   getSocketRoutes(socket, io);
 
   // socket.on('getConvos', async (user, callback) => {
   //   console.log('received request for convos', user);
 
-  //   // const chats = await 
+  //   // const chats = await
   //   // Chat
   //   //   .aggregate([
   //   //     { $match: { user: mongoose.Types.ObjectId(user.user) } },
-  //   //     { $lookup: 
-  //   //       { 
+  //   //     { $lookup:
+  //   //       {
   //   //         from: 'users',
   //   //         localField: 'user',
   //   //         foreignField: '_id',
@@ -153,13 +154,13 @@ io.on("connection", (socket) => {
   //   //   ])
   //   //   .exec();
 
-  //     // const chats = await 
+  //     // const chats = await
   //     // Chat
   //     //   .find( { users: user.user } )
   //     //   .populate('users')
   //     //   .exec();
 
-  //   const chats = await 
+  //   const chats = await
   //   Chat
   //     .find({ "users.user": mongoose.Types.ObjectId(user.user) })
   //     .exec();
@@ -173,7 +174,7 @@ io.on("connection", (socket) => {
   //   console.log('received message history request', value)
   //   //get the messages from the db
   //   const chatLoadTest = await Chat.findOne({ _id: value.cid });
-  //   const chats = await 
+  //   const chats = await
   //   Chat
   //     .findOne({ _id: value.cid })
   //     .exec();
@@ -207,7 +208,7 @@ io.on("connection", (socket) => {
   //       _id: selectedChat.users[userIdx].user,
   //       unreadMsgCount: selectedChat.users[userIdx].unreadMsgCount,
   //     },
-  //     message 
+  //     message
   //   }
 
   //   // send the message to all users of the room including the sender
@@ -221,10 +222,10 @@ io.on("connection", (socket) => {
 
   //   // get number of messages after message id sent
   //   const unReadMsgCount = await Message.aggregate([
-  //     { $match: 
+  //     { $match:
   //       { chat: { $eq: value.cid },
   //         _id: { $gt: mongoose.Types.ObjectId(value.lastMessage_id) }
-  //       }, 
+  //       },
   //     },
   //     { $count: "count"}
   //   ])
@@ -254,7 +255,7 @@ io.on("connection", (socket) => {
 
 //     const message = new Message(messageData);
 //     await message.save();
-  
+
 //     const selectedChat = await Chat.findOne({ _id: messageData.chat }, function(err, res) {
 //       if(res.recentMsgs.length > 20) {
 //         res.recentMsgs.shift();
@@ -273,8 +274,8 @@ mongoose
   .then(() => {
     httpServer.listen(process.env.PORT || 5000);
   })
-  .catch(err => {
-    console.error(err)
+  .catch((err) => {
+    console.error(err);
   });
 
-mongoose.set('useFindAndModify', false);
+mongoose.set("useFindAndModify", false);
