@@ -271,7 +271,7 @@ io.on("connection", (socket) => {
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    httpServer.listen(5000);
+    httpServer.listen(process.env.PORT || 5000);
   })
   .catch(err => {
     console.error(err)
