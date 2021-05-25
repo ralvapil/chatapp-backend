@@ -4,8 +4,8 @@ const ContactListService = require('../services/ContactListService')
 const userController = {
   async addContact(data, callback) {
     if(data?.email?.length > 0) {
-      const contactList = await ContactListService.addContact(data.email, data.user);
-      return callback(contactList);
+      const result = await ContactListService.addContact(data.email, data.user);
+      return callback(result);
     }
 
     return callback(null)

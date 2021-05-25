@@ -20,6 +20,16 @@ const getSocketRoutes = (socket, io) => {
     chatController.readMessage(data, callback);
   })
 
+  socket.on('typing', async (data) => {
+    chatController.sendIsTyping(data, true, io);
+    console.log('typing', data);
+  })
+
+  socket.on('typingEnd', async (data) => {
+    chatController.sendIsTyping(data, false, io);
+    console.log('ended', data);
+  })
+
   socket.on('addContact', async (data, callback) => {
     userController.addContact(data, callback);
   })

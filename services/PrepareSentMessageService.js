@@ -56,20 +56,23 @@ class PrepareSentMessageService {
   }
 
   async incrementUnreadMsgCount(senderId) {
-    // update unread messages for each user in chat upon message preparation
-    this.chat.users.forEach(async (chatUser, idx) => {
-      // do NOT increment for sender
-      if(chatUser.user.toString() !== senderId.toString()) {
-        await Chat.updateOne(
-          {_id: this.chat._id,},
-          { 
-            $inc: {
-             [`users.${idx}.unreadMsgCount`]: 1
+    await Promise.all(
+      // update unread messages for each user in chat upon message preparation
+      this.chat.users.map(async (chatUser, idx) => {
+        // do NOT increment for sender
+        if(chatUser.user.toString() !== senderId.toString()) {
+          await Chat.updateOne(
+            {_id: this.chat._id,},
+            { 
+              $inc: {
+              [`users.${idx}.unreadMsgCount`]: 1
+              }
             }
-          }
-        )
-      }
-    })
+          )
+        }
+      })
+    )
+    
 
     await this.getLatestChat();
   }

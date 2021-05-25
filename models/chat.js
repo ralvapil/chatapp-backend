@@ -16,6 +16,10 @@ const chatSchema = new Schema({
       type: String,
       required: true
     },
+    picture: {
+      type: String,
+      required: true,
+    },
     lastReadMsg: {
       type: mongoose.Schema.ObjectId, 
       ref: 'Message',

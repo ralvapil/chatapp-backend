@@ -34,7 +34,7 @@ class UserService {
       user.picture = profile?.photos[0]?.value;
       
       await user.save();
-
+      
       // TODO: create contactlist should be using another service
       const contactList = await ContactListService.create(user._id);
       return user;

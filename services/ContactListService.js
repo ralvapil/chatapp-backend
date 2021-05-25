@@ -24,15 +24,15 @@ class ContactListService {
       console.log('newcontact', newContact)
       if(!newContact) {
         // newContact user does not exist
-        return null;
+        return {status: 'failed', data: null};
       }
-
+      
       // check if user already exists in contact list
       
       const contactList = await this.getUserContactList(user)
-      console.log('contact', contactList)
-      const isAlreadyExists = contactList.length > 0 ? contactList.filter((contact) => contact.user.email === email).length > 0 : false;
-
+      // console.log('contact', contactList.contacts[0].user.email,  email)
+      const isAlreadyExists = contactList.contacts.length > 0 ? contactList.contacts.filter((contact) => contact.user.email === email).length > 0 : false;
+  
       // insert into contact list
       if(!isAlreadyExists) {
         contactList.contacts.push({user: newContact._id});
@@ -40,10 +40,10 @@ class ContactListService {
         await contactList.save();
 
         //refresh populated list
-        return await this.getUserContactList(user);
+        return { status: 'success', data: await this.getUserContactList(user)};
       }
-
-      return contactList;
+      console.log('already exists')
+      return { status: 'failed', data: contactList};
     } catch(err) {
       return null
     }

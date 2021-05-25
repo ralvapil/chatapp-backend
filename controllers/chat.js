@@ -32,10 +32,24 @@ const chatController = {
     const chat = await CreateChatService.create(data.user, data.contact)
   },
 
+  async sendIsTyping(data, isTyping, io) {
+    const chat = await ChatService.getChat(data.cid)
+
+    chat.users
+      .filter((user) => user.user.toString() !== data.user)
+      .forEach( async (user) => {
+        io.in(user.user.toString()).emit(isTyping ? 'memberIsTyping' : 'memberEndTyping', { 
+          user: data.user,
+          cid: data.cid,
+        });
+        console.log('send typing emitted')
+      })
+  },
+
   async createChat(data, callback, io) {
     console.log('in create', data)
     const chat = await CreateChatService.create(data.user, data.members)
-
+    console.log('chat after', chat)
     // loop through each chat member and refresh their chats
     
 
