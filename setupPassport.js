@@ -16,7 +16,7 @@ const setupPassport = () => {
   passport.use(new GoogleStrategy({
     clientID: '17046437582-pbhk4jniie6m0p7llcttm3r4770t6tv2.apps.googleusercontent.com',
     clientSecret: 'fnTOqOhBNLB7wvsU5MkfpHj1',
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    callbackURL: "https://limitless-inlet-11254.herokuapp.com/auth/google/callback"
   },
     async function(accessToken, refreshToken, profile, done) {
         const user = await UserService.findByGoogleIdOrCreate(profile);
