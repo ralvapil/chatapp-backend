@@ -1,3 +1,5 @@
+## *Note: This project is currently under construction and will be refactored over time.*
+
 # node-js-getting-started
 
 A barebones Node.js app using [Express 4](http://expressjs.com/).
